@@ -9,6 +9,7 @@ Created on Sun Aug 30 2018
 # Importing the libraries
 import sys
 import re
+import sqlite3
 
 def getauthor(dataset_file):
 	file = dataset_file.split('.')
@@ -19,7 +20,7 @@ def getbook(line):
 		line = line.strip()
 		line = line.strip('\n')
 		line = line.split("EBOOK")
-		line = line[1].split(' ')
+		line = line[1].split()
 		return line[1]
 	except:
 		print("usage: {0:s} book name".format(dataset_file))
@@ -60,9 +61,32 @@ def data_preprocess(dataset_file):
 		print("usage: {0:s} textfile".format(sys.argv[0]))
 		sys.exit(1)
 
+def create_tables():
+
+	try:
+		conn = sqlite3.connect("../book_classifier.db")
+		c = conn.cursor()
+		c.execute('CREATE TABLE  if not exists {tn} ({nf} {ft} PRIMARY KEY AUTOINCREMENT,{nf2} {ft2} not null)'\
+        .format(tn='author', nf='id', ft='INTEGER', nf2='name', ft2='text'))
+
+		c.execute('CREATE TABLE  if not exists {tn} ({nf} {ft} PRIMARY KEY AUTOINCREMENT,{nf2} {ft2} not null, {nf3} {ft3} not null, FOREIGN KEY({nf3}) REFERENCES {nT}({nTf}) )'\
+        .format(tn='books', nf='id', ft='INTEGER', nf2='name', ft2='text', nf3='author_id', ft3='INTEGER', nT='author', nTf='id'))
+
+		# c.execute('CREATE TABLE  if not exists {tn} ({nf} {ft} PRIMARY KEY,{nf2} {ft2} not null)'\
+  #       .format(tn='author', nf='id', ft='INTEGER', nf2='name', ft2='text'))
+
+		# c.execute('CREATE TABLE  if not exists {tn} ({nf} {ft} PRIMARY KEY,{nf2} {ft2} not null)'\
+  #       .format(tn='author', nf='id', ft='INTEGER', nf2='name', ft2='text'))
+
+		conn.commit()
+		conn.close()
+	except:
+		print("Error during database processing")
+		sys.exit(1)
+
 def save_to_data_base(words_book, author, book):
 	
-	pass
+	create_tables() # if not exist
 
 def main():	
 	if len(sys.argv) < 2:
