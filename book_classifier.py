@@ -13,8 +13,28 @@ import sqlite3
 
 def getauthor(dataset_file):
 
-	file = dataset_file.split('.')
-	return file[0].lower()
+	out = ""
+	try:
+		with open(dataset_file,"r") as file:
+			for line in file.readlines():
+				if (line.find("Author:")) >=0: # skip title 
+					line = line.strip()
+					line = line.strip('\n')
+					line = line.split("Author:")
+					line = line[1].split()
+					if len(line) ==1:
+						out =  line[0].strip().lower()
+					elif len(line) >1:
+						out =  line[0].strip().lower() + "_" + line[1].strip().lower()
+					else:
+						print("Missing Author's name in file")
+						sys.exit(1)
+					break
+	except:
+		print("usage: {0:s} book name".format(dataset_file))
+		sys.exit(1)
+
+	return out
 
 def getbook(dataset_file = None, header_file = None):
 
@@ -27,7 +47,7 @@ def getbook(dataset_file = None, header_file = None):
 		try:
 			header_file = header_file.strip()
 			header_file = header_file.strip('\n')
-			header_file = header_file.split("EBOOK")
+			header_file = header_file.split("Title:")
 			header_file = header_file[1].split()
 			out =  header_file[0].strip().lower()
 		except:
@@ -38,13 +58,12 @@ def getbook(dataset_file = None, header_file = None):
 		try:
 			with open(dataset_file,"r") as file:
 				for line in file.readlines():
-					if (line.find("*** START OF THIS PROJECT")) >=0: # skip title 
+					if (line.find("Title:")) >=0: # skip title 
 						out = getbook(header_file = line)
 						continue
 		except:
 			print("usage: {0:s} book name".format(dataset_file))
 			sys.exit(1)
-
 	return out
 
 def data_preprocess(dataset_file):
@@ -198,7 +217,7 @@ def save_words_freq(words_book, book):
 	try:
 		c = conn.cursor()
 		# save all words, if not exist in databe
-		for word,freq in words_book:
+		for word,freq in words_book.items():
 			c.execute('SELECT ({coi}) FROM {tn} WHERE {cn}="{aut}"'.\
 							format(coi='id', tn='words', cn='name', aut=word))
 
@@ -229,28 +248,60 @@ def save_words_freq(words_book, book):
 		conn.close()
 
 	except:
-		print("Error while saving author in database")
+		print("Error while saving words in database")
 		sys.exit(1)
 
 def save_to_data_base(words_book, author, book):
 	
-	create_tables() # if not exist
 	save_author(author)
 	save_book(book,author)
 	save_words_freq(words_book,book)
 
 def isBookInDatabase(book):
-	return False
 
+	try:
+		conn = sqlite3.connect("../book_classifier.db")
+	except:
+		print("Database do not exist")
+		sys.exit(1)
+
+	isBook = True
+
+	try:
+		c = conn.cursor()
+		c.execute('SELECT ({coi}) FROM {tn} WHERE {cn}="{aut}"'.\
+							format(coi='id', tn='books', cn='name', aut=book))
+
+
+		id_book = c.fetchone()
+
+		if id_book is None:
+			isBook = False
+
+	except:
+		print("Error while checking book in database")
+		sys.exit(1)
+
+	return isBook
+
+
+def init_dataBase():
+		create_tables() # if not exist
 
 def main():	
 	if len(sys.argv) < 2:
 		print("Please provide <file>\n")
 		sys.exit(1)
 	
+	# run scripts to create tables and others, if not exists
+	init_dataBase()
+	isBook_database = False
+
 	# book already exists in databse
 	if isBookInDatabase(getbook(dataset_file = sys.argv[1])	):
-		print("Book " + getbook(dataset_file = sys.argv[1]) + " is already in database")
+		print("Book " + getbook(dataset_file = sys.argv[1]) + " is already in database...")
+		print("Ritriving data....")
+		isBook_database = True
 
 	else: # read book, save in database, including the frequence of words
 		words_book = {}
