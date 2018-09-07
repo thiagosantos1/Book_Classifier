@@ -4,7 +4,7 @@
 Created on Sun Aug 30 2018
 
 @author: thiago
-"""
+""" 
 
 # Importing the libraries
 import sys
@@ -18,11 +18,11 @@ def data_preprocess(dataset_file):
 	broken_word = False
 	splited_word = ""
 
-	book = getbook(dataset_file = dataset_file)	
+	book = getbook_file(dataset_file = dataset_file)	
 	try:
 			with open(dataset_file,"r") as file:
 				start_book = False
-				author = getauthor(dataset_file)
+				author = getauthor_file(dataset_file)
 				for line in file.readlines():
 					if (line.find("*** START OF THIS PROJECT")) >=0: # skip title 
 						start_book = True
@@ -71,8 +71,8 @@ def main():
 	isBook_database = False
 
 	# book already exists in databse
-	if isBookInDatabase(getbook(dataset_file = sys.argv[1])	):
-		print("\nBook " + getbook(dataset_file = sys.argv[1]) + " is already in database...\n")
+	if isBookInDatabase(getbook_file(dataset_file = sys.argv[1])	):
+		print("\nBook " + getbook_file(dataset_file = sys.argv[1]) + " is already in database...\n")
 		isBook_database = True
 
 	else: # read book, save in database, including the frequence of words
@@ -82,6 +82,8 @@ def main():
 
 		save_to_data_base(words_book,author,book)
 		print("Book saved into database successfully....\n")
+
+	get_total_words_book(1)
 
 if __name__ == '__main__':
 	main()

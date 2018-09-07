@@ -1,8 +1,11 @@
 import sqlite3
-import sys
+import sys 
 import re
 
-def getauthor(dataset_file):
+"""
+#functions to get some specific information from file
+"""
+def getauthor_file(dataset_file):
 
 	out = ""
 	try:
@@ -27,7 +30,7 @@ def getauthor(dataset_file):
 
 	return out
 
-def getbook(dataset_file = None, header_file = None):
+def getbook_file(dataset_file = None, header_file = None):
 
 	if dataset_file == None and header_file == None:
 		print("Need a file or the header of file to get book's name")
@@ -55,13 +58,14 @@ def getbook(dataset_file = None, header_file = None):
 			with open(dataset_file,"r") as file:
 				for line in file.readlines():
 					if (line.find("Title:")) >=0: # skip title 
-						title = getbook(header_file = line)
+						title = getbook_file(header_file = line)
 						continue
 		except:
 			print("usage: {0:s} book name".format(dataset_file))
 			sys.exit(1)
 	return title
 
+# function to create tables
 def create_tables():
 
 	try:
@@ -91,7 +95,9 @@ def create_tables():
 		print("Error while creating tables in database")
 		sys.exit(1)
 
-
+"""
+# functions to save some data into database
+"""
 def save_author(author):
 	try:
 		conn = sqlite3.connect("../book_classifier.db")
@@ -197,12 +203,22 @@ def save_words_freq(words_book, book):
 		print("Error while saving words in database")
 		sys.exit(1)
 
+# save a new book to database
 def save_to_data_base(words_book, author, book):
 	
 	save_author(author)
 	save_book(book,author)
 	save_words_freq(words_book,book)
 
+# create the tables
+def init_dataBase():
+		create_tables() # if not exist
+
+"""
+# Functions to get data from data sets
+"""
+
+# check if book exist in database
 def isBookInDatabase(book):
 
 	try:
@@ -230,6 +246,129 @@ def isBookInDatabase(book):
 
 	return isBook
 
+# get all authors from databse
+def get_authors():
+	try:
+		conn = sqlite3.connect("../book_classifier.db")
+	except:
+		print("Database do not exist")
+		sys.exit(1)
 
-def init_dataBase():
-		create_tables() # if not exist
+	try:
+		c = conn.cursor()
+		c.execute('SELECT {coi} FROM {tn} '.\
+							format(coi='id', tn='author'))
+
+
+		ids_authors = c.fetchall()
+		if ids_authors is None:
+			print("There is no author saved on the dataset")
+			return None
+
+		ids = [id_aut for id_author in ids_authors for id_aut in id_author]
+
+		return ids
+	except:
+		print("Error while checking all authors")
+		sys.exit(1)
+
+# get all frequence & words from an author, order by frequece
+def get_freq_words_author(author):
+	try:
+		conn = sqlite3.connect("../book_classifier.db")
+	except:
+		print("Database do not exist")
+		sys.exit(1)
+
+	try:
+		c = conn.cursor()
+		c.execute('SELECT SUM(freq), word_id FROM frequence where book_id in(select id from books where author_id = {tn}) group by word_id order by freq DESC '.\
+							format(tn=author))
+
+
+		freq_words = c.fetchall()
+		if freq_words is None:
+			print("There are no words saved on the dataset")
+			return None
+		return freq_words
+
+	except:
+		print("Error while getting all words from author")
+		sys.exit(1)
+
+# get total words in database
+def get_num_words_database():
+	try:
+		conn = sqlite3.connect("../book_classifier.db")
+	except:
+		print("Database do not exist")
+		sys.exit(1)
+
+	try:
+		c = conn.cursor()
+		c.execute('select count() from {tn} '.\
+							format(tn="words"))
+
+
+		total_words = c.fetchone()
+		if total_words is None:
+			print("There are no words on the dataset")
+			return None
+		return total_words[0]
+
+	except:
+		print("Error while getting numb of all words in database")
+		sys.exit(1)
+
+# get total words from an author in database
+def get_num_words_author(author):
+	try:
+		conn = sqlite3.connect("../book_classifier.db")
+	except:
+		print("Database do not exist")
+		sys.exit(1)
+
+	try:
+		c = conn.cursor()
+		c.execute('SELECT count(word_id) FROM frequence where book_id in(select id from books where author_id = {tn}) group by word_id'.\
+							format(tn=author))
+
+
+		words = c.fetchall()
+		num_words = 0
+		if words is None:
+			print("There are no words saved on the dataset")
+			return None
+		num_words = len(words)
+		return num_words
+
+	except:
+		print("Error while getting all words from author")
+		sys.exit(1)
+
+# get total of words from an specific book
+def get_total_words_book(book):
+	try:
+		conn = sqlite3.connect("../book_classifier.db")
+	except:
+		print("Database do not exist")
+		sys.exit(1)
+
+	try:
+		c = conn.cursor()
+		c.execute('SELECT count(word_id) FROM frequence where book_id = {tn} group by book_id'.\
+							format(tn=book))
+
+
+		words_book = c.fetchone()
+		if words_book is None:
+			print("There are no words saved on the dataset")
+			return None
+		
+		return words_book[0]
+
+	except:
+		print("Error while getting all words from author")
+		sys.exit(1)
+
+
