@@ -68,12 +68,10 @@ def main():
 	
 	# run scripts to create tables and others, if not exists
 	init_dataBase()
-	isBook_database = False
 
 	# book already exists in databse
 	if isBookInDatabase(getbook_file(dataset_file = sys.argv[1])	):
 		print("\nBook " + getbook_file(dataset_file = sys.argv[1]) + " is already in database...\n")
-		isBook_database = True
 
 	else: # read book, save in database, including the frequence of words
 		print("\nReading book and saving it to database.....")
@@ -83,7 +81,9 @@ def main():
 		save_to_data_base(words_book,author,book)
 		print("Book saved into database successfully....\n")
 
-	print(get_freq_words_author(1))
+		print("Training --> Updating probabilities.....\n")
+
+		print("Done with Training.....\n")
 
 if __name__ == '__main__':
 	main()
