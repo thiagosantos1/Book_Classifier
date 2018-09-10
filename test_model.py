@@ -49,7 +49,7 @@ def data_preprocess(dataset_file, lb_wrd, up_wrd,feature_words):
 
       return test_words
   except:
-    print("Erro during pre-processing sample test")
+    print("Erro during pre-processing sample test - File "+dataset_file + " do not exist")
     sys.exit(1)
 
 

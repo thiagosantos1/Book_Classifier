@@ -7,4 +7,11 @@ Our goal is to create a table of probability of each word, based on the frequenc
 # Database
 Since we may run the same example many times, for analyses, we will create a sqlite database. Therefore, we will save all books, all words and its frequences for each book. This will speed up the data pre-processing time.
 
+# How to execute 
+	* You must save all data inside of folder data, separated by training and test folder and separated by author
+	* To execute for all data
+		* You can run ./main.py 
+	* To test for an especific test sample
+		* You can run ./main.py <name of file to test>
+
 
