@@ -86,9 +86,7 @@ def classifie(feature_words,test_words):
 
 def predict(dataset): 
 
-  # later, we can put all of this in a class, to avoid computing the same thing
   feature_detector = (5 * get_num_books() ) + get_num_authors()
-
   # feature words, done over training
   feature_words = get_words_features(feature_detector)
 

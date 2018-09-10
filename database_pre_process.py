@@ -98,6 +98,11 @@ def create_tables():
     print("Error while creating tables in database")
     sys.exit(1)
 
+# create the tables
+def init_dataBase():
+  create_tables() # if not exist
+
+
 # delete all data from a table  
 def clean_table(table):
   try:
@@ -258,9 +263,6 @@ def save_probs_author(author,dict_probs):
     print("Error while saving author in database")
     sys.exit(1)
 
-# create the tables
-def init_dataBase():
-    create_tables() # if not exist
 
 """
 # Functions to get data from data sets
@@ -568,6 +570,41 @@ def get_idwords_features(feature_detector):
 
   except:
     print("Error while getting all words from author")
+    sys.exit(1)
+
+# get a list of frequences, from teh feature words
+def get_freq_features(feature_detector):
+  try:
+    conn = sqlite3.connect("../book_classifier.db")
+  except:
+    print("Database do not exist")
+    sys.exit(1)
+
+  try:
+    words_id = get_idwords_features(feature_detector)
+    words = ""
+    all_freq_feat = []
+    for x in range(len(words_id)-1):
+      words += str(words_id[x]) + ','
+    words +=str(words_id[len(words_id)-1])
+
+    c = conn.cursor()
+    c.execute('SELECT SUM(freq) FROM frequence where word_id in ({tn}) group by word_id order by freq DESC '.\
+              format(tn=words))
+
+
+    all_freq = c.fetchall()
+    if all_freq is None:
+      print("There are no words saved on the dataset")
+      return None
+
+    for freq in all_freq:
+      all_freq_feat.append(freq[0])
+
+    return all_freq_feat
+
+  except:
+    print("Error while getting all words names")
     sys.exit(1)
 
 # get the actually words classified as features, based on a feature detecton

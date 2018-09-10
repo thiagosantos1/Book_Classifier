@@ -82,14 +82,13 @@ def training(dataset):
 
     print("Training --> Updating important words and probabilities.....\n")
 
-    # the feature_detector is a limit of how we will choose a word
+     # the feature_detector is a limit of how we will choose a word
     # to be considered for our probability
-    # for now it will be = (5 * num books) + bias (num of authos)
+    # for now it will be = (10 * num books) + bias (num of authos)
     feature_detector = (5 * get_num_books() ) + get_num_authors()
-
     # first, for now, let's use just this feature
     # later, we can also add somethig like --> if the distribution over the authors is similar, do not pick it
-  
+    
     # update table of probabilities for all authors
     clean_table("probabilities")
     for author in get_authors():
