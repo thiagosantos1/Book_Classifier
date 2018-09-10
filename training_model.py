@@ -24,13 +24,11 @@ def data_preprocess(dataset_file, lb_wrd, up_wrd):
         start_book = False
         author = getauthor_file(dataset_file)
         for line in file.readlines():
-          if (line.find("*** START OF THIS PROJECT")) >=0: # skip title 
-            start_book = True
+          if not start_book:
+            if re.search("^\*\*\*.*START",line):
+              start_book = True
             continue
-          elif not start_book:
-            continue
-
-          if (line.find("*** END OF THIS PROJECT")) >=0: # skip botton
+          if re.search("^\*\*\*.*END",line) or re.search("End of Project Gutenberg",line) :
             break
 
           line = line.strip() # for spaces
@@ -62,27 +60,25 @@ def data_preprocess(dataset_file, lb_wrd, up_wrd):
     print("Erro during pre-processing data")
     sys.exit(1)
 
-def main(): 
-  if len(sys.argv) < 2:
-    print("Please provide <file>\n")
-    sys.exit(1)
+def training(dataset): 
   
   # run scripts to create tables and others, if not exists
   init_dataBase()
 
   # book already exists in databse
-  if isBookInDatabase(getbook_file(dataset_file = sys.argv[1])  ):
-    print("\nBook " + getbook_file(dataset_file = sys.argv[1]) + " is already in database...\n")
+  if isBookInDatabase(getbook_file(dataset_file = dataset)  ):
+    print("\nBook " + getbook_file(dataset_file = dataset) + " is already in database...\n")
 
   # training
   else: # read book, save in database, including the frequence of words and probabilities
 
     print("\nReading book and saving it to database.....")
     words_book = {}
-    words_book, author, book = data_preprocess(sys.argv[1],5,8)
-
+    words_book, author, book = data_preprocess(dataset,5,8)
+    if not words_book:
+      print("somethig is wrong")
     save_to_data_base(words_book,author,book)
-    print("Book saved into database successfully....\n")
+    print("Book "+ book + " from author " + author +" saved into database successfully....\n")
 
     print("Training --> Updating important words and probabilities.....\n")
 
@@ -102,10 +98,6 @@ def main():
 
     # there is room for improvement for the model
     print("Done with Training.....\n")
-
-
-if __name__ == '__main__':
-  main()
 
 
 

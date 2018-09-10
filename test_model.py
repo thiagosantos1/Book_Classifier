@@ -49,7 +49,7 @@ def data_preprocess(dataset_file, lb_wrd, up_wrd,feature_words):
 
       return test_words
   except:
-    print("Erro during pre-processing data")
+    print("Erro during pre-processing sample test")
     sys.exit(1)
 
 
@@ -59,7 +59,6 @@ def get_prob_author(author):
 
 # wrd1 * log(porb_wrd1) + wrd2 * log(porb_wrd2) + ...... wrdn * log(porb_wrdn)
 def classifie(feature_words,test_words):
-  print(feature_words)
   hig_prob = 0.0 # list with id of the author and the highest prob that the book was written from an author y
   prob_aut = 0.0 # prob the book was written for author y
   num_wrd_x = 0 # numb of times wrd x appenas in the sample book
@@ -79,18 +78,13 @@ def classifie(feature_words,test_words):
       elif prob_aut > hig_prob[1]:
         hig_prob = [author,prob_aut]
 
-    print(author, prob_aut)
     prob_aut = 0.0
 
   return hig_prob
 
 
 
-def main(): 
-
-  if len(sys.argv) < 2:
-    print("Please provide <file>\n")
-    sys.exit(1) 
+def predict(dataset): 
 
   # later, we can put all of this in a class, to avoid computing the same thing
   feature_detector = (5 * get_num_books() ) + get_num_authors()
@@ -99,18 +93,15 @@ def main():
   feature_words = get_words_features(feature_detector)
 
   # colect the data, with frequence, based if the word is a feature word
-  test_words = data_preprocess(sys.argv[1],5,8, feature_words)
+  test_words = data_preprocess(dataset,5,8, feature_words)
 
   # based on all gaussian multinomial probabilities
   # we get a list with the author id and it's probability(the highest among all)
   y_ = classifie(feature_words,test_words)
 
-  author = get_author_name(y_[0])
+  return y_
 
-  print(author)
 
-if __name__ == '__main__':
-  main()
 
 
 
