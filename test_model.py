@@ -1,6 +1,6 @@
  #!/usr/bin/env python3
 # -*- coding: utf-8 -*- 
-"""
+""" 
 Created on Sept 7
 
 @author: thiago
@@ -64,6 +64,7 @@ def classifie(feature_words,test_words):
   num_wrd_x = 0 # numb of times wrd x appenas in the sample book
   prob_wrd_x =0
   first_author = True
+  test_prob = []
   for author in get_authors():
     for ft_wrd,id_ft in feature_words.items():
       prob_wrd_x = get_proba_word_author(author,id_ft)
@@ -78,8 +79,12 @@ def classifie(feature_words,test_words):
       elif prob_aut > hig_prob[1]:
         hig_prob = [author,prob_aut]
 
+
+    test_prob.append([author,prob_aut])
+
     prob_aut = 0.0
 
+  print(test_prob)
   return hig_prob
 
 

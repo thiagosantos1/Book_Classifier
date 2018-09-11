@@ -1,6 +1,6 @@
 import sqlite3
 import sys 
-import re
+import re 
 
 """
 #functions to get some specific information from file

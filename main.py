@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # chmod u+x
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-  
 """
 Created on Sept 9
 
@@ -43,7 +43,7 @@ def save_data(training_folder):
         save_book_database(path_book)
 
 """
-Test - Classifie 
+Test - Classifie  
 """
 # if a folder is passed, we run the test for all test cases
 # if a file, it runs the test for that file
@@ -95,6 +95,7 @@ def main():
 
   training_folder = "/data/training"
   save_data(training_folder)
+  training(5)
 
   """ ##### Test #####
   """
@@ -122,36 +123,36 @@ def main():
 
   else:
 
-      # after all data is saved, time for training --> Find the feature of words
-    for x in(0,5,10,15,20,25,30,40,45):
-      clean_table("feature_words")
-      print("Training for min freq of " + str(x))
-      training(x) 
+    #   # after all data is saved, time for training --> Find the feature of words
+    # for x in(0,5,10,15,20,25,30,40,45):
+    #   clean_table("feature_words")
+    #   print("Training for min freq of " + str(x))
+    #   training(x) 
 
-      """
-        For a test of all test files in the test bataset
-      """
-      test_folder = "/data/test"
-      print("\n#\t#\t#\t#\t#\t#\t#\t#\t#\nTesting model with all test cases in the dataset "+test_folder+"\n#\t#\t#\t#\t#\t#\t#\t#\t#")
-      # get all predictions
-      pred = test_sample(folder=test_folder) 
-      print(pred)
-      # calculate our matrix consution, with [correct outputs, wrong outputs]
-      matrix_confusion = [0,0]
-      for output in pred:
-        correct = False
-        names = re.split('[^A-Za-z]+',output[0])
-        for name in names:
-          if output[1].find(name.lower()) >=0:
-            matrix_confusion[0] +=1
-            correct = True
-            break
+    """
+      For a test of all test files in the test bataset
+    """
+    test_folder = "/data/test"
+    print("\n#\t#\t#\t#\t#\t#\t#\t#\t#\nTesting model with all test cases in the dataset "+test_folder+"\n#\t#\t#\t#\t#\t#\t#\t#\t#")
+    # get all predictions
+    pred = test_sample(folder=test_folder) 
+    print(pred)
+    # calculate our matrix consution, with [correct outputs, wrong outputs]
+    matrix_confusion = [0,0]
+    for output in pred:
+      correct = False
+      names = re.split('[^A-Za-z]+',output[0])
+      for name in names:
+        if output[1].find(name.lower()) >=0:
+          matrix_confusion[0] +=1
+          correct = True
+          break
 
-        if not correct:
-          matrix_confusion[1] +=1
-      
+      if not correct:
+        matrix_confusion[1] +=1
+    
 
-      print("\nThe accurancy of this model is "+ str( (matrix_confusion[0]/(matrix_confusion[0] + matrix_confusion[1]))*100) +' %\n' )
+    print("\nThe accurancy of this model is "+ str( (matrix_confusion[0]/(matrix_confusion[0] + matrix_confusion[1]))*100) +' %\n' )
 
   #display_dristribution()
 

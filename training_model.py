@@ -76,7 +76,7 @@ def set_feature_words(min_freq):
     # and the min freq of word x in a book t of author y must be >= than the max of author x
     min_freq = 0
     max_freq = 0
-    feature_detector = 3/2.0
+    feature_detector = 5/4.0 #3/2.0
     word_done = False
     for word in words:
       for author_x in authors:
@@ -135,7 +135,7 @@ def set_feature_words(min_freq):
                   if freq_x is None:
                     freq_x = 0
                   if freq_x > max_freq:
-                    max_freq = freq_x
+                    max_freq = freq_x 
 
               # if min > max, then the word is a feature word for our model 
               if min_freq > max_freq:
@@ -175,6 +175,7 @@ def training(min_freq):
 
     # insert new feature words, based on that new author
     print("Saving new feature words....")
+    clean_table("feature_words")
     set_feature_words(min_freq)
     print("Done saving new feature of words")
 
