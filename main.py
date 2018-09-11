@@ -31,7 +31,7 @@ def save_data(training_folder):
   folders = listdir(training_path)
 
   for author_folder in folders:
-    if author_folder != '.DS_Store': # and author_folder in ('Austen','Dickens'): # for now, just to see the results from 2 authors
+    if author_folder != '.DS_Store' and author_folder in ('Austen','Dickens'): # for now, just to see the results from 2 authors
       path = training_path + '/' + author_folder
       books = [book for book in listdir(path) if isfile(join(path, book)) and book != '.DS_Store' ]
       
@@ -61,7 +61,7 @@ def test_sample(file = None, folder = None):
     folders = listdir(test_path)
 
     for author_folder in folders:
-      if author_folder != '.DS_Store': # and author_folder in ('Austen','Dickens'): # for now, just to see the results from 2 authors
+      if author_folder != '.DS_Store' and author_folder in ('Austen','Dickens'): # for now, just to see the results from 2 authors
         path = test_path + '/' + author_folder
         books = [book for book in listdir(path) if isfile(join(path, book)) and book != '.DS_Store' ]
         
@@ -94,7 +94,7 @@ def main():
   """
 
   training_folder = "/data/training"
-  #save_data(training_folder)
+  save_data(training_folder)
 
   """ ##### Test #####
   """
@@ -123,7 +123,7 @@ def main():
   else:
 
       # after all data is saved, time for training --> Find the feature of words
-    for x in(0,5,10,15,20,25,30,45,40):
+    for x in(0,5,10,15,20,25,30,40,45):
       clean_table("feature_words")
       print("Training for min freq of " + str(x))
       training(x) 
