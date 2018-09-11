@@ -16,7 +16,7 @@ from os import listdir,getcwd
 from os.path import isfile, join
 import pathlib
 from database_pre_process import *
-from training_model import training
+from training_model import training,save_book_database
 from test_model import predict
 
 #import matplotlib.pyplot as plt
@@ -24,7 +24,7 @@ from test_model import predict
 """
 Training 
 """
-def training_data(training_folder):
+def save_data(training_folder):
 
   current_dir = getcwd()
   training_path = current_dir + training_folder
@@ -40,7 +40,7 @@ def training_data(training_folder):
       for book in books:
         path_book = path + '/' + book
 
-        training(path_book)
+        save_book_database(path_book)
 
 """
 Test - Classifie 
@@ -87,12 +87,27 @@ def display_dristribution():
 
 def main():
 
+  # run scripts to create tables and others, if not exists
+  init_dataBase()
+
+  """ ##### Training #####
+  """
+
+  training_folder = "/data/training"
+  #save_data(training_folder)
+
+  """ ##### Test #####
+  """
+  num_authors = get_num_authors()
+  if num_authors is None:
+    num_authors = 0
+  if num_authors <2:
+    print("Model has just one author. Please, insert more")
+    sys.exit(1)
+
   single_test = None
   if len(sys.argv) >= 2:
     single_test = sys.argv[1]
-
-  training_folder = "/data/training"
-  training_data(training_folder)
 
   """
     For a test of a single file
@@ -107,30 +122,36 @@ def main():
 
   else:
 
-    """
-      For a test of all test files in the test bataset
-    """
-    test_folder = "/data/test"
-    print("\n#\t#\t#\t#\t#\t#\t#\t#\t#\nTesting model with all test cases in the dataset "+test_folder+"\n#\t#\t#\t#\t#\t#\t#\t#\t#")
-    # get all predictions
-    pred = test_sample(folder=test_folder) 
-    print(pred)
-    # calculate our matrix consution, with [correct outputs, wrong outputs]
-    matrix_confusion = [0,0]
-    for output in pred:
-      correct = False
-      names = re.split('[^A-Za-z]+',output[0])
-      for name in names:
-        if output[1].find(name.lower()) >=0:
-          matrix_confusion[0] +=1
-          correct = True
-          break
+      # after all data is saved, time for training --> Find the feature of words
+    for x in(0,5,10,15,20,25,30,45,40):
+      clean_table("feature_words")
+      print("Training for min freq of " + str(x))
+      training(x) 
 
-      if not correct:
-        matrix_confusion[1] +=1
-    
+      """
+        For a test of all test files in the test bataset
+      """
+      test_folder = "/data/test"
+      print("\n#\t#\t#\t#\t#\t#\t#\t#\t#\nTesting model with all test cases in the dataset "+test_folder+"\n#\t#\t#\t#\t#\t#\t#\t#\t#")
+      # get all predictions
+      pred = test_sample(folder=test_folder) 
+      print(pred)
+      # calculate our matrix consution, with [correct outputs, wrong outputs]
+      matrix_confusion = [0,0]
+      for output in pred:
+        correct = False
+        names = re.split('[^A-Za-z]+',output[0])
+        for name in names:
+          if output[1].find(name.lower()) >=0:
+            matrix_confusion[0] +=1
+            correct = True
+            break
 
-    print("\nThe accurancy of this model is "+ str( (matrix_confusion[0]/(matrix_confusion[0] + matrix_confusion[1]))*100) +' %\n' )
+        if not correct:
+          matrix_confusion[1] +=1
+      
+
+      print("\nThe accurancy of this model is "+ str( (matrix_confusion[0]/(matrix_confusion[0] + matrix_confusion[1]))*100) +' %\n' )
 
   #display_dristribution()
 

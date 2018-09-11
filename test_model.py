@@ -86,9 +86,8 @@ def classifie(feature_words,test_words):
 
 def predict(dataset): 
 
-  feature_detector = (5 * get_num_books() ) + get_num_authors()
   # feature words, done over training
-  feature_words = get_words_features(feature_detector)
+  feature_words = get_words_features() # got change
 
   # colect the data, with frequence, based if the word is a feature word
   test_words = data_preprocess(dataset,5,8, feature_words)

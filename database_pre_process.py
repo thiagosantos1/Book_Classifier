@@ -91,6 +91,8 @@ def create_tables():
     c.execute('CREATE TABLE  if not exists {tn} ({nf} {ft} PRIMARY KEY AUTOINCREMENT, {nf3} {ft3} not null, {nf4} {ft4} not null,{nf5} {ft5} not null, FOREIGN KEY({nf3}) REFERENCES {nT}({nTf}),FOREIGN KEY({nf4}) REFERENCES {nT2}({nTf2}) )'\
               .format(tn='probabilities', nf='id', ft='INTEGER', nf3='word_id', ft3='INTEGER', nf4='author_id', ft4='INTEGER',nf5='prob_freq', ft5='REAL', nT='words', nTf='id', nT2='author', nTf2='id'))
 
+    c.execute('CREATE TABLE  if not exists {tn} ({nf} {ft} PRIMARY KEY AUTOINCREMENT,{nf2} {ft2} not null,  FOREIGN KEY({nf2}) REFERENCES {nT}({nTf}) )'\
+              .format(tn='feature_words', nf='id', ft='INTEGER', nf2='word_id', ft2='INTEGER', nT='words', nTf='id'))
 
     conn.commit()
     conn.close()
@@ -122,7 +124,7 @@ def clean_table(table):
     conn.close()
 
   except:
-    print("Error while deleting table " + table)
+    print("Error while deleting table " + str(table))
     sys.exit(1)
 
 
@@ -263,6 +265,27 @@ def save_probs_author(author,dict_probs):
     print("Error while saving author in database")
     sys.exit(1)
 
+# function to save a new feature word to database
+def save_feature_word(word):
+  try:
+    conn = sqlite3.connect("../book_classifier.db")
+  except:
+    print("Database do not exist")
+    sys.exit(1)
+
+  try:
+    c = conn.cursor()
+
+    c.execute('INSERT INTO {tn} ({idf}) VALUES ("{cn}")'.\
+              format(tn='feature_words', idf='word_id',cn=word))
+
+    conn.commit()
+    conn.close()
+
+  except:
+    print("Error while saving word feature in database")
+    sys.exit(1)
+
 
 """
 # Functions to get data from data sets
@@ -346,6 +369,30 @@ def get_author_name(author_id):
     print("Error while checking all authors")
     sys.exit(1)
 
+# get author's id based on name from databse
+def get_author_id(author_name):
+  try:
+    conn = sqlite3.connect("../book_classifier.db")
+  except:
+    print("Database do not exist")
+    sys.exit(1)
+
+  #try:
+  c = conn.cursor()
+  c.execute('SELECT {coi} FROM {tn} where name = "{idn}"'.\
+            format(coi='id', tn='author', idn=str(author_name)))
+
+
+  author_id = c.fetchone()
+  if author_id is None:
+    print("There is no author saved on the dataset")
+    return None
+
+  return author_id[0]
+  # except:
+  #   print("Error while checking author id")
+  #   sys.exit(1)
+
 # get all frequence & words from an author, order by frequece
 def get_freq_words_author(author):
   try:
@@ -367,7 +414,7 @@ def get_freq_words_author(author):
     return freq_words
 
   except:
-    print("Error while getting all words from author")
+    print("Error while getting all frequence from author " + str(author))
     sys.exit(1)
 
 # get total words in database
@@ -417,7 +464,7 @@ def get_num_words_author(author):
     return num_words
 
   except:
-    print("Error while getting all words from author")
+    print("Error while getting num of words from author "+ str(author))
     sys.exit(1)
 
 # get total of words from an specific book
@@ -442,10 +489,35 @@ def get_total_words_book(book):
     return words_book[0]
 
   except:
-    print("Error while getting all words from author")
+    print("Error while getting total of words from book " + str(book))
     sys.exit(1)
 
-# get the total of appereances of word in, in all books from author y
+# get frequence of word x from an specific book
+def get_total_word_x_book_y(word, book):
+  try:
+    conn = sqlite3.connect("../book_classifier.db")
+  except:
+    print("Database do not exist")
+    sys.exit(1)
+
+  try:
+    c = conn.cursor()
+    c.execute('SELECT sum(freq) FROM frequence where book_id ={tn} and word_id = {tn2}'.\
+              format(tn=book, tn2=word))
+
+
+    sum_word_book = c.fetchone()
+    if sum_word_book is None:
+      print("There are no words saved on the dataset")
+      return 0
+    
+    return sum_word_book[0]
+
+  except:
+    print("Error while getting count of frequence from word " + str(word) +" of author " + str(author))
+    sys.exit(1)
+
+# get the total of appereances of word x in in all books, from author y
 def get_total_word_x_author(author,word):
   try:
     conn = sqlite3.connect("../book_classifier.db")
@@ -463,12 +535,12 @@ def get_total_word_x_author(author,word):
     total_word = c.fetchall()
     if total_word is None:
       print("There are no words saved on the dataset")
-      return None 
+      return 0 
 
     return total_word[0][0]
 
   except:
-    print("Error while getting count of word "+word+ "from author " +author)
+    print("Error while getting count of word "+ str(word) + " from author " + str(author))
     sys.exit(1)
 
 # get numb of books
@@ -490,6 +562,32 @@ def get_num_books():
       print("There are no books saved on the dataset")
       return None
     return num_books[0]
+
+  except:
+    print("Error while getting num of books")
+    sys.exit(1)
+
+# get numb of books
+def get_books_author_x(author):
+  try:
+    conn = sqlite3.connect("../book_classifier.db")
+  except:
+    print("Database do not exist")
+    sys.exit(1)
+
+  try:
+    c = conn.cursor()
+    c.execute('SELECT id FROM books where author_id = {tn}'.\
+              format(tn=author))
+
+
+    books = c.fetchall()
+    if books is None:
+      print("There are no books saved on the dataset")
+      return None
+
+    books_author = [x[0] for x in books]
+    return books_author
 
   except:
     print("Error while getting num of books")
@@ -520,8 +618,8 @@ def get_num_authors():
     print("Error while getting num of authors")
     sys.exit(1)
 
-# get words and its frequence(bag of words, based on the frequence and a feature detector)
-def get_words_freq_features(feature_detector):
+# get all words from database
+def get_all_words():
   try:
     conn = sqlite3.connect("../book_classifier.db")
   except:
@@ -529,25 +627,25 @@ def get_words_freq_features(feature_detector):
     sys.exit(1)
 
   try:
+    
     c = conn.cursor()
-    c.execute('SELECT SUM(freq), word_id FROM frequence where freq > {tn} group by word_id order by freq DESC '.\
-              format(tn=feature_detector))
+    c.execute('select id from words;')
 
 
-    freq_words = c.fetchall()
-    if freq_words is None:
+    words = c.fetchall()
+    if words is None:
       print("There are no words saved on the dataset")
       return None
 
-    print(len(freq_words),freq_words)
-    return freq_words
+    all_words = [y[0] for y in words]
+    return all_words
 
   except:
-    print("Error while getting all words from author")
+    print("Error while getting all words from database")
     sys.exit(1)
 
 # get id words classified as features, based on a feature detecton
-def get_idwords_features(feature_detector):
+def get_idwords_features():
   try:
     conn = sqlite3.connect("../book_classifier.db")
   except:
@@ -555,9 +653,10 @@ def get_idwords_features(feature_detector):
     sys.exit(1)
 
   try:
+
     c = conn.cursor()
-    c.execute('SELECT SUM(freq), word_id FROM frequence where freq > {tn} group by word_id order by freq DESC '.\
-              format(tn=feature_detector))
+    c.execute('SELECT word_id FROM {tn}'.\
+              format(tn='feature_words'))
 
 
     freq_words = c.fetchall()
@@ -565,15 +664,15 @@ def get_idwords_features(feature_detector):
       print("There are no words saved on the dataset")
       return None
 
-    words = [y[1] for y in freq_words]
+    words = [y[0] for y in freq_words]
     return words
 
   except:
-    print("Error while getting all words from author")
+    print("Error while getting all ids from feature words")
     sys.exit(1)
 
-# get a list of frequences, from teh feature words
-def get_freq_features(feature_detector):
+# get words and its frequence(bag of words, based on the frequence and a feature detector)
+def get_words_freq_features():
   try:
     conn = sqlite3.connect("../book_classifier.db")
   except:
@@ -581,7 +680,76 @@ def get_freq_features(feature_detector):
     sys.exit(1)
 
   try:
-    words_id = get_idwords_features(feature_detector)
+
+    words_id = get_idwords_features()
+    words = ""
+    all_freq_feat = []
+    for x in range(len(words_id)-1):
+      words += str(words_id[x]) + ','
+    words +=str(words_id[len(words_id)-1])
+
+    c = conn.cursor()
+    c.execute('SELECT SUM(freq),word_id FROM frequence where word_id in ({tn}) group by word_id order by freq DESC '.\
+              format(tn=words))
+
+
+    freq_words = c.fetchall()
+    if freq_words is None:
+      print("There are no words saved on the dataset")
+      return None
+
+    return freq_words
+
+  except:
+    print("Error while getting all freq from feature words from")
+    sys.exit(1)
+
+# return a dict with key as the id_word and as value its probability calculation for the author
+def get_freq_prob_author(author):
+  try:
+    conn = sqlite3.connect("../book_classifier.db")
+  except:
+    print("Database do not exist")
+    sys.exit(1)
+
+  #try:
+  prob_wrds = {}
+  tot_wrds = get_num_words_author(author) * 1.0
+  bag_words = get_idwords_features()
+  if len(bag_words) <1:
+    return None
+  words = ""
+  for x in range(len(bag_words)-1):
+    words += str(bag_words[x]) + ','
+  words +=str(bag_words[len(bag_words)-1])
+  c = conn.cursor()
+  c.execute('select word_id,sum(freq)/{twrd} from frequence where book_id in (select id from books where author_id ={aut}) and word_id in ({wrds}) group by word_id;'.\
+            format(twrd=tot_wrds,aut=author,wrds=words))
+
+
+  prob_words = c.fetchall()
+  if prob_words is None:
+    print("There are no words saved on the dataset")
+    return None
+
+  for prob in prob_words:
+    prob_wrds[prob[0]] = prob[1]
+
+  return prob_wrds
+
+  # except:
+  #   print("Error while getting all probs from author")
+  #   sys.exit(1)
+# get a list of frequences, from teh feature words
+def get_freq_features():
+  try:
+    conn = sqlite3.connect("../book_classifier.db")
+  except:
+    print("Database do not exist")
+    sys.exit(1)
+
+  try:
+    words_id = get_idwords_features()
     words = ""
     all_freq_feat = []
     for x in range(len(words_id)-1):
@@ -608,7 +776,7 @@ def get_freq_features(feature_detector):
     sys.exit(1)
 
 # get the actually words classified as features, based on a feature detecton
-def get_words_features(feature_detector):
+def get_words_features():
   try:
     conn = sqlite3.connect("../book_classifier.db")
   except:
@@ -616,7 +784,7 @@ def get_words_features(feature_detector):
     sys.exit(1)
 
   try:
-    words_id = get_idwords_features(feature_detector)
+    words_id = get_idwords_features()
     words = ""
     for x in range(len(words_id)-1):
       words += str(words_id[x]) + ','
@@ -642,41 +810,6 @@ def get_words_features(feature_detector):
     print("Error while getting all words names")
     sys.exit(1)
 
-# return a dict with key as the id_word and as value its probability calculation for the author
-def get_freq_prob_author(author,feature_detector):
-  try:
-    conn = sqlite3.connect("../book_classifier.db")
-  except:
-    print("Database do not exist")
-    sys.exit(1)
-
-  try:
-    prob_wrds = {}
-    tot_wrds = get_num_words_author(author) * 1.0
-    bag_words = get_idwords_features(feature_detector)
-    words = ""
-    for x in range(len(bag_words)-1):
-      words += str(bag_words[x]) + ','
-    words +=str(bag_words[len(bag_words)-1])
-    c = conn.cursor()
-    c.execute('select word_id,sum(freq)/{twrd} from frequence where book_id in (select id from books where author_id ={aut}) and word_id in ({wrds}) group by word_id;'.\
-              format(twrd=tot_wrds,aut=author,wrds=words))
-
-
-    prob_words = c.fetchall()
-    if prob_words is None:
-      print("There are no words saved on the dataset")
-      return None
-
-    for prob in prob_words:
-      prob_wrds[prob[0]] = prob[1]
-
-    return prob_wrds
-
-  except:
-    print("Error while getting all probs from author")
-    sys.exit(1)
-
 # get the probability of word, from an author
 def get_proba_word_author(author,word):
   try:
@@ -700,7 +833,7 @@ def get_proba_word_author(author,word):
     return prob[0]
 
   except:
-    print("Error while getting prob from word " + word +" and author " +author)
+    print("Error while getting prob from word " + str(word) +" and author " + str(author))
     sys.exit(1)
 
 """
