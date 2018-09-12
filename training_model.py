@@ -145,6 +145,13 @@ def set_feature_words(min_freq):
     print("Error while saving new feautures")
     sys.exit(1)
 
+# we have a second way of setting important words, just based on frequence.
+# This turned to be better when working only with 2 authors.
+def set_feature_words_freq_decetor():
+  feature_detector = (5 * get_num_books() ) + get_num_authors()
+  words = get_idwords_feature_detector(feature_detector)
+  for word in words:
+    save_feature_word(word)
 
 def save_book_database(dataset): 
 
@@ -176,7 +183,8 @@ def training(min_freq):
     # insert new feature words, based on that new author
     print("Saving new feature words....")
     clean_table("feature_words")
-    set_feature_words(min_freq)
+    #set_feature_words(min_freq)
+    set_feature_words_freq_decetor()
     print("Done saving new feature of words")
 
     # update table of probabilities for all authors

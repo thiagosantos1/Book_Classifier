@@ -671,6 +671,31 @@ def get_idwords_features():
     print("Error while getting all ids from feature words")
     sys.exit(1)
 
+def get_idwords_feature_detector(feature_detector):
+  try:
+    conn = sqlite3.connect("../book_classifier.db")
+  except:
+    print("Database do not exist")
+    sys.exit(1)
+
+  try:
+    c = conn.cursor()
+    c.execute('SELECT SUM(freq), word_id FROM frequence where freq > {tn} group by word_id order by freq DESC '.\
+              format(tn=feature_detector))
+
+    freq_words = c.fetchall()
+
+    if freq_words is None:
+      print("There are no words saved on the dataset")
+      return None
+
+    words = [y[1] for y in freq_words]
+    return words
+
+  except:
+    print("Error while getting all words from author")
+    sys.exit(1)
+
 # get words and its frequence(bag of words, based on the frequence and a feature detector)
 def get_words_freq_features():
   try:
